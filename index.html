@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Form Validation</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: cursive, sans-serif;
+            background: linear-gradient(to right, #83a4d4, #b6fbff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wrapper {
+            background-color: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h3 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .formelement {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .formelement input {
+            width: 100%;
+            padding: 12px 15px;
+            padding-left: 40px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .formelement label {
+            position: absolute;
+            left: 40px;
+            top: -10px;
+            background: white;
+            padding: 0 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .formelement i {
+            position: absolute;
+            top: 13px;
+            left: 12px;
+            color: #888;
+        }
+
+        #submitbutton {
+            width: 100%;
+            padding: 12px;
+            background-color: #2b6777;
+            color: white;
+            border: none;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #submitbutton:hover {
+            background-color: #1e4c5e;
+        }
+
+        #error,
+        #success {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #error {
+            color: red;
+            font-weight: 500;
+        }
+
+        #success {
+            color: green;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        #togglePassword {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+
+<body>
+    <h3>Form Validation</h3>
+
+    <div class="wrapper">
+        <div class="formelement">
+            <i>📧</i>
+            <label for="Email">Email</label>
+            <input type="text" id="Email" name="Email">
+        </div>
+        <div class="formelement">
+            <i>📱</i>
+            <label for="phoneno">Phone</label>
+            <input type="text" id="phoneno" name="phoneno">
+        </div>
+        <div class="formelement">
+            <i>🔒</i>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password">
+        </div>
+        <div class="formelement">
+            <i>🔒</i>
+            <label for="confirmpassword">Confirm</label>
+            <input type="password" id="confirmpassword" name="confirmpassword">
+        </div>
+        <input type="submit" id="submitbutton" value="Register">
+    </div>
+
+    <div id="error"></div>
+    <div id="success"></div>
+
+    <script>
+        function isEmail(email) {
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
+        }
+
+        function isValidPassword(password) {
+            const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,15}$/;
+            return regex.test(password);
+        }
+
+        // Show/hide password toggle
+        $(document).ready(function() {
+            $('#password').after('<span id="togglePassword" style="cursor:pointer; position:absolute; right:15px; top:42%;">👁️</span>');
+
+            $('#togglePassword').click(function() {
+                const type = $('#password').attr('type') === 'password' ? 'text' : 'password';
+                $('#password').attr('type', type);
+                $(this).text(type === 'password' ? '👁️' : '🙈');
+            });
+
+            // Restrict phone input to digits only and max 10
+            $('#phoneno').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+            });
+
+            // Submit button logic
+            $("#submitbutton").click(function() {
+                let errormessage = "";
+                let missingfield = "";
+
+                const email = $("#Email").val();
+                const phone = $("#phoneno").val();
+                const password = $("#password").val();
+                const confirm = $("#confirmpassword").val();
+
+                if (!email) missingfield += "<p>Email not filled</p>";
+                if (!phone) missingfield += "<p>Phone number not filled</p>";
+                if (!password) missingfield += "<p>Password not filled</p>";
+
+                if (email && !isEmail(email)) errormessage += "<p>Email is not valid</p>";
+                if (phone.length !== 10) errormessage += "<p>Phone number must be 10 digits</p>";
+                if (password && !isValidPassword(password)) {
+                    errormessage += `<p>Password must be 8-15 characters and include:
+                    <ul>
+                        <li>At least one uppercase letter</li>
+                        <li>At least one lowercase letter</li>
+                        <li>At least one special character</li>
+                    </ul></p>`;
+                }
+                if (password && confirm && password !== confirm) errormessage += "<p>Passwords do not match</p>";
+
+                if (missingfield || errormessage) {
+                    $("#success").html("");
+                    $("#error").html(missingfield + errormessage);
+                } else {
+                    $("#error").html("");
+                    $("#success").html("✅ You are successfully registered!");
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
